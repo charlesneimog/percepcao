@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Student - Progression Room</title>
+        <link rel="stylesheet" href="../styles.css" />
+    </head>
+    <body data-role="student">
+        <main class="app-shell student-layout">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">Student</p>
+                    <h1>Choose the progression</h1>
+                </div>
+                <div class="status-pill" id="connection-status">Offline</div>
+            </header>
+
+            <section class="panel setup-panel">
+                <div class="field-grid">
+                    <label>
+                        <span>Room ID</span>
+                        <input id="room-id" autocomplete="off" placeholder="myclassname" />
+                    </label>
+                    <label>
+                        <span>Your name</span>
+                        <input id="user-name" autocomplete="off" />
+                    </label>
+                </div>
+                <div class="action-row">
+                    <button class="button primary" id="connect-room" type="button">Join Room</button>
+                    <button class="button secondary" id="disconnect-room" type="button" disabled>Disconnect</button>
+                </div>
+            </section>
+
+            <section class="panel answer-panel">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Answer</p>
+                        <h2 id="student-prompt">Waiting for progressions</h2>
+                    </div>
+                </div>
+                <div class="block-grid student-blocks" id="student-options"></div>
+                <div class="action-row">
+                    <button class="button primary" id="send-answer" type="button" disabled>Send Answer</button>
+                </div>
+                <p class="quiet" id="answer-status">Join the room to receive the options.</p>
+            </section>
+
+            <section class="metrics-grid student-score-grid">
+                <article class="metric-card">
+                    <span>Right</span>
+                    <strong id="student-right-count">0</strong>
+                    <em>answers</em>
+                </article>
+                <article class="metric-card">
+                    <span>Wrong</span>
+                    <strong id="student-wrong-count">0</strong>
+                    <em>answers</em>
+                </article>
+            </section>
+        </main>
+
+        <script src="../p2p.js"></script>
+        <script src="../classroom.js"></script>
+    </body>
+</html>
