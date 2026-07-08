@@ -1,48 +1,48 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Teacher - Progression Room</title>
+        <title>Professor - Sala de Progressões</title>
         <link rel="stylesheet" href="../styles.css" />
     </head>
     <body data-role="teacher">
         <main class="app-shell teacher-layout">
             <header class="topbar">
                 <div>
-                    <p class="eyebrow">Teacher</p>
-                    <h1>Progression Room</h1>
+                    <p class="eyebrow">Professor</p>
+                    <h2>Progressões Harmônicas</h2>
                 </div>
-                <div class="status-pill" id="connection-status">Offline</div>
+                <div class="status-pill" id="connection-status">Desconectado</div>
             </header>
 
             <section class="panel setup-panel">
                 <div class="field-grid">
                     <label>
-                        <span>Room ID</span>
-                        <input id="room-id" autocomplete="off" placeholder="myclassname" />
+                        <span>ID da sala</span>
+                        <input id="room-id" autocomplete="off" placeholder="minhaturma" />
                     </label>
                     <label>
-                        <span>Your name</span>
+                        <span>Seu nome</span>
                         <input id="user-name" autocomplete="off" />
                     </label>
                 </div>
                 <div class="action-row">
-                    <button class="button primary" id="connect-room" type="button">Start Room</button>
-                    <button class="button secondary" id="disconnect-room" type="button" disabled>Disconnect</button>
+                    <button class="button primary" id="connect-room" type="button">Iniciar Sala</button>
+                    <button class="button secondary" id="disconnect-room" type="button" disabled>Desconectar</button>
                 </div>
             </section>
 
             <section class="panel">
                 <div class="section-heading">
                     <div>
-                        <p class="eyebrow">Options</p>
-                        <h2>Progressions</h2>
+                        <p class="eyebrow">Opções</p>
+                        <h2>Progressões</h2>
                     </div>
-                    <button class="button secondary" id="send-progressions" type="button" disabled>Send Blocks</button>
+                    <button class="button secondary" id="send-progressions" type="button" disabled>Enviar Blocos</button>
                 </div>
                 <label>
-                    <span>One progression per line</span>
+                    <span>Uma progressão por linha</span>
                     <textarea id="progression-input" rows="6">I - V - vi - IV
 ii - V - I
 I - IV - V
@@ -53,14 +53,14 @@ vi - IV - I - V</textarea>
             <section class="panel">
                 <div class="section-heading">
                     <div>
-                        <p class="eyebrow">Answer Key</p>
-                        <h2>What did you play?</h2>
+                        <p class="eyebrow">Gabarito</p>
+                        <h2>O que você tocou?</h2>
                     </div>
                     <div class="action-row compact-actions">
                         <button class="button secondary" id="correct-answer" type="button" disabled>
-                            Correct the Answer
+                            Alterar resposta correta
                         </button>
-                        <button class="button danger" id="reset-round" type="button" disabled>New Exercice</button>
+                        <button class="button danger" id="reset-round" type="button" disabled>Novo exercício</button>
                     </div>
                 </div>
                 <div class="block-grid" id="correct-options"></div>
@@ -68,27 +68,27 @@ vi - IV - I - V</textarea>
 
             <section class="metrics-grid">
                 <article class="metric-card">
-                    <span>Online</span>
+                    <span>Conectados</span>
                     <strong id="online-count">0</strong>
-                    <em>connected</em>
+                    <em>conectados</em>
                 </article>
                 <article class="metric-card">
-                    <span>Students</span>
+                    <span>Alunos</span>
                     <strong id="student-count">0</strong>
                     <em id="student-percent">100%</em>
                 </article>
                 <article class="metric-card">
-                    <span>Correct</span>
+                    <span>Corretas</span>
                     <strong id="correct-count">0</strong>
                     <em id="correct-percent">0%</em>
                 </article>
                 <article class="metric-card">
-                    <span>Incorrect</span>
+                    <span>Incorretas</span>
                     <strong id="incorrect-count">0</strong>
                     <em id="incorrect-percent">0%</em>
                 </article>
                 <article class="metric-card">
-                    <span>No answer</span>
+                    <span>Sem resposta</span>
                     <strong id="missing-count">0</strong>
                     <em id="missing-percent">0%</em>
                 </article>
@@ -97,9 +97,9 @@ vi - IV - I - V</textarea>
             <section class="panel">
                 <div class="section-heading">
                     <div>
-                        <p class="eyebrow">Summary</p>
-                        <h2>Progression Results</h2>
-                        <p class="quiet" id="exercise-counter">1 total exercise</p>
+                        <p class="eyebrow">Resumo</p>
+                        <h2>Resultados das Progressões</h2>
+                        <p class="quiet" id="exercise-counter">1 exercício no total</p>
                     </div>
                 </div>
                 <div class="progression-summary" id="progression-summary"></div>
@@ -108,8 +108,8 @@ vi - IV - I - V</textarea>
             <section class="panel">
                 <div class="section-heading">
                     <div>
-                        <p class="eyebrow">Live</p>
-                        <h2>Student Answers</h2>
+                        <p class="eyebrow">Ao vivo</p>
+                        <h2>Respostas dos Alunos</h2>
                     </div>
                 </div>
                 <div class="response-list" id="response-list"></div>

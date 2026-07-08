@@ -1,13 +1,13 @@
 (function () {
     const role = document.body.dataset.role;
     const params = new URLSearchParams(window.location.search);
-    const adjectives = ["bright", "steady", "quick", "clear", "lively", "calm", "sharp", "warm"];
-    const nouns = ["pulse", "cadence", "chord", "voice", "meter", "note", "phrase", "tone"];
+    const adjectives = ["claro", "firme", "rapido", "limpo", "vivo", "calmo", "agudo", "quente"];
+    const nouns = ["pulso", "cadencia", "acorde", "voz", "metro", "nota", "frase", "tom"];
 
     const state = {
         network: null,
         room: "",
-        name: randomName(role === "teacher" ? "teacher" : role === "answers" ? "answers" : "student"),
+        name: randomName(role === "teacher" ? "professor" : role === "answers" ? "respostas" : "aluno"),
         options: [],
         correctAnswer: "",
         pendingCorrectAnswer: "",
@@ -75,10 +75,10 @@
         state.room = room;
         state.name = name;
         state.network = new SimpleP2P(room, name);
-        setStatus("Connecting", false);
+        setStatus("Conectando", false);
 
         state.network.onConnect = () => {
-            setStatus("Online", true);
+            setStatus("Conectado", true);
             byId("connect-room").disabled = true;
             byId("disconnect-room").disabled = false;
             byId("room-id").disabled = true;
@@ -93,14 +93,14 @@
             } else if (role === "student") {
                 announceStudent();
                 state.syncTimer = window.setInterval(announceStudent, 1500);
-                byId("answer-status").textContent = "Connected. Waiting for the teacher.";
+                byId("answer-status").textContent = "Conectado. Aguardando o professor.";
             } else if (role === "answers") {
                 renderAnswerStats();
             }
         };
 
         state.network.onDisconnect = () => {
-            setStatus("Offline", false);
+            setStatus("Desconectado", false);
             byId("connect-room").disabled = false;
             byId("disconnect-room").disabled = true;
             byId("room-id").disabled = false;
@@ -142,7 +142,7 @@
 
         state.network.onError = (error) => {
             console.error(error);
-            setStatus("Error", false);
+            setStatus("Erro", false);
         };
 
         state.network.connect();
@@ -156,7 +156,7 @@
         if (!state.students.has(peerId)) {
             state.students.set(peerId, {
                 id: peerId,
-                name: fallbackName || "Student",
+                name: fallbackName || "Aluno",
                 choice: "",
                 updatedAt: null,
             });
@@ -374,7 +374,8 @@
                 role === "answers" && state.cumulativeSummary
                     ? state.cumulativeSummary.totalExercises
                     : getTotalExercises();
-            exerciseCounter.textContent = `${totalExercises} total exercise${totalExercises === 1 ? "" : "s"}`;
+            exerciseCounter.textContent =
+                totalExercises === 1 ? "1 exercício no total" : `${totalExercises} exercícios no total`;
         }
         byId("correct-count").textContent = String(correct);
         byId("incorrect-count").textContent = String(incorrect);
@@ -390,7 +391,7 @@
         if (students.length === 0) {
             const empty = document.createElement("p");
             empty.className = "quiet";
-            empty.textContent = "No students connected yet.";
+            empty.textContent = "Nenhum aluno conectado ainda.";
             list.appendChild(empty);
             return;
         }
@@ -402,7 +403,7 @@
                 const hasAnswer = Boolean(student.choice);
                 const isCorrect = state.correctAnswer && student.choice === state.correctAnswer;
                 const badgeClass = !hasAnswer ? "" : isCorrect ? "correct" : "incorrect";
-                const badgeText = !hasAnswer ? "No answer" : isCorrect ? "Correct" : "Incorrect";
+                const badgeText = !hasAnswer ? "Sem resposta" : isCorrect ? "Correta" : "Incorreta";
 
                 row.className = "response-row";
                 row.innerHTML = `
@@ -411,8 +412,8 @@
                     <div class="badge ${badgeClass}"></div>
                 `;
                 row.querySelector(".name").textContent = student.name;
-                row.querySelector(".choice").textContent = student.choice || "Waiting";
-                row.querySelector(".badge").textContent = state.correctAnswer ? badgeText : "Received";
+                row.querySelector(".choice").textContent = student.choice || "Aguardando";
+                row.querySelector(".badge").textContent = state.correctAnswer ? badgeText : "Recebida";
                 list.appendChild(row);
             });
     }
@@ -427,7 +428,7 @@
         if (rows.length === 0) {
             const empty = document.createElement("p");
             empty.className = "quiet";
-            empty.textContent = "No progression options yet.";
+            empty.textContent = "Ainda não há opções de progressão.";
             container.appendChild(empty);
             return;
         }
@@ -444,15 +445,15 @@
 
             row.querySelector(".progression-name").textContent = item.option;
             row.querySelector(".progression-count").textContent =
-                `${item.exercises} exercise${item.exercises === 1 ? "" : "s"} / ` +
-                `${item.selected} selection${item.selected === 1 ? "" : "s"}`;
+                `${item.exercises} ${item.exercises === 1 ? "exercício" : "exercícios"} / ` +
+                `${item.selected} ${item.selected === 1 ? "seleção" : "seleções"}`;
             row.querySelector(".summary-split").innerHTML = `
-                <span class="badge correct">${item.right} right</span>
-                <span class="badge incorrect">${item.wrong} wrong</span>
+                <span class="badge correct">${item.right} ${item.right === 1 ? "acerto" : "acertos"}</span>
+                <span class="badge incorrect">${item.wrong} ${item.wrong === 1 ? "erro" : "erros"}</span>
             `;
             const evaluated = item.right + item.wrong;
             row.querySelector(".progression-percent").textContent =
-                evaluated === 0 ? "0%" : `${Math.round((item.right / evaluated) * 100)}% right`;
+                evaluated === 0 ? "0%" : `${Math.round((item.right / evaluated) * 100)}% de acerto`;
 
             container.appendChild(row);
         });
@@ -534,20 +535,20 @@
         }
 
         if (state.options.length === 0) {
-            byId("student-prompt").textContent = "Waiting for progressions";
+            byId("student-prompt").textContent = "Aguardando progressões";
             byId("answer-status").textContent = state.network
-                ? "Connected. Waiting for the teacher."
-                : "Join the room to receive the options.";
+                ? "Conectado. Aguardando o professor."
+                : "Entre na sala para receber as opções.";
             return;
         }
 
-        byId("student-prompt").textContent = "What was played";
+        byId("student-prompt").textContent = "O que foi tocado";
         const isSubmitted = Boolean(state.submittedAnswer);
         byId("answer-status").textContent = isSubmitted
-            ? "Answer sent. Wait for the next exercise to answer again."
+            ? "Resposta enviada. Aguarde o próximo exercício para responder novamente."
             : state.selectedAnswer
-              ? "Ready to send."
-              : "Tap one block, then send your answer.";
+              ? "Pronto para enviar."
+              : "Toque em um bloco e depois envie sua resposta.";
         if (sendButton) {
             sendButton.disabled = !state.selectedAnswer || isSubmitted;
         }
@@ -588,12 +589,12 @@
 
     function updateStudentLink() {
         if (role !== "answers") return;
-        const room = byId("room-id").value.trim() || "myclassname";
+        const room = byId("room-id").value.trim() || "minhaturma";
         const url = new URL("../students/", window.location.href);
         url.searchParams.set("roomid", room);
         const link = url.href;
         byId("student-link").value = link;
-        byId("student-room-label").textContent = `Room: ${room}`;
+        byId("student-room-label").textContent = `Sala: ${room}`;
         byId("student-qr").src =
             `https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=18&data=${encodeURIComponent(link)}`;
     }
@@ -601,7 +602,7 @@
     function init() {
         const roomInput = byId("room-id");
         const nameInput = byId("user-name");
-        roomInput.value = params.get("roomid") || params.get("room") || "myclassname";
+        roomInput.value = params.get("roomid") || params.get("room") || "minhaturma";
         nameInput.value = params.get("name") || state.name;
 
         byId("connect-room").addEventListener("click", connect);
