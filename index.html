@@ -3,22 +3,152 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Progression Room</title>
-        <link rel="stylesheet" href="./styles.css" />
+        <title>Percepcao Exercises</title>
+        <style>
+            :root {
+                color-scheme: light;
+                --bg: #ffffff;
+                --surface: #ffffff;
+                --surface-soft: #f7f7f7;
+                --text: #000000;
+                --muted: #606060;
+                --line: #d1d5db;
+                --primary: #000000;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                min-height: 100vh;
+                background: var(--bg);
+                color: var(--text);
+                font-family:
+                    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                    sans-serif;
+            }
+
+            main {
+                width: min(920px, calc(100% - 32px));
+                margin: 0 auto;
+                padding: 72px 0;
+            }
+
+            header {
+                margin-bottom: 36px;
+            }
+
+            h1,
+            h2,
+            p {
+                margin: 0;
+            }
+
+            h1 {
+                font-size: clamp(3rem, 8vw, 5.5rem);
+                line-height: 0.95;
+                letter-spacing: 0;
+                font-weight: 900;
+            }
+
+            .eyebrow {
+                color: var(--muted);
+                font-size: 0.95rem;
+                font-weight: 700;
+                margin-bottom: 14px;
+            }
+
+            .lede {
+                max-width: 58ch;
+                color: var(--muted);
+                line-height: 1.55;
+                margin-top: 18px;
+            }
+
+            .exercise-list {
+                display: grid;
+                gap: 14px;
+            }
+
+            .exercise-card {
+                min-height: 132px;
+                border: 1px solid var(--line);
+                border-radius: 8px;
+                background: var(--surface);
+                color: inherit;
+                text-decoration: none;
+                padding: 24px;
+                display: grid;
+                grid-template-columns: 1fr auto;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .exercise-card:hover,
+            .exercise-card:focus-visible {
+                background: var(--surface-soft);
+                outline: none;
+            }
+
+            .exercise-card h2 {
+                font-size: clamp(1.5rem, 3vw, 2.25rem);
+                line-height: 1.1;
+                font-weight: 900;
+            }
+
+            .exercise-card p {
+                color: var(--muted);
+                line-height: 1.5;
+                margin-top: 8px;
+            }
+
+            .arrow {
+                width: 44px;
+                height: 44px;
+                border-radius: 999px;
+                background: var(--primary);
+                color: white;
+                display: grid;
+                place-items: center;
+                font-size: 1.35rem;
+                line-height: 1;
+            }
+
+            @media (max-width: 640px) {
+                main {
+                    padding: 48px 0;
+                }
+
+                .exercise-card {
+                    grid-template-columns: 1fr;
+                }
+
+                .arrow {
+                    justify-self: start;
+                }
+            }
+        </style>
     </head>
     <body>
-        <main class="home-shell">
-            <section class="home-panel">
-                <p class="eyebrow">P2P Classroom</p>
-                <h1>Progression Room</h1>
+        <main>
+            <header>
+                <p class="eyebrow">Exercises</p>
+                <h1>Percepcao</h1>
                 <p class="lede">
-                    Create a teacher room, share the student link, and collect answers in real time.
+                    Choose an exercise below. Add new exercises to this page as they are created.
                 </p>
-                <div class="home-actions">
-                    <a class="button primary" href="./teacher/">Teacher</a>
-                    <a class="button secondary" href="./students/">Student</a>
-                    <a class="button secondary" href="./answers/">Answers</a>
-                </div>
+            </header>
+
+            <section class="exercise-list" aria-label="Exercise list">
+                <a class="exercise-card" href="./progressions/">
+                    <span>
+                        <h2>Progressions</h2>
+                        <p>Create a teacher room, share the student link, and collect answers.</p>
+                    </span>
+                    <span class="arrow" aria-hidden="true">&rarr;</span>
+                </a>
             </section>
         </main>
     </body>
