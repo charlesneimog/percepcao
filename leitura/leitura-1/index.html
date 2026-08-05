@@ -19,6 +19,8 @@
                 --bg: #f4f6f9;
                 --fg: rgba(20, 25, 31, 0.92);
                 --panel: rgba(255, 255, 255, 0.75);
+                --panel-border: rgba(15, 23, 42, 0.14);
+                --control-active: #2563eb;
                 --shadow: rgba(15, 23, 42, 0.12) 0px 2px 4px, rgba(15, 23, 42, 0.22) 0px 10px 24px;
             }
 
@@ -27,6 +29,8 @@
                     --bg: #171b20;
                     --fg: rgba(255, 255, 255, 0.9);
                     --panel: rgba(36, 40, 46, 0.7);
+                    --panel-border: rgba(255, 255, 255, 0.16);
+                    --control-active: #60a5fa;
                     --shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px, rgba(0, 0, 0, 0.45) 0px 12px 28px;
                 }
             }
@@ -79,6 +83,61 @@
                 outline: none;
             }
 
+            .page-controls {
+                position: fixed;
+                top: max(0.75rem, env(safe-area-inset-top));
+                right: max(0.75rem, env(safe-area-inset-right));
+                z-index: 10;
+                display: flex;
+                gap: 0.5rem;
+            }
+
+            .page-control {
+                display: grid;
+                place-items: center;
+                width: 2.75rem;
+                height: 2.75rem;
+                padding: 0;
+                color: var(--fg);
+                background: var(--panel);
+                border: 1px solid var(--panel-border);
+                border-radius: 0.75rem;
+                box-shadow: var(--shadow);
+                cursor: pointer;
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+            }
+
+            .page-control:hover {
+                transform: translateY(-1px);
+            }
+
+            .page-control:focus-visible {
+                outline: 2px solid var(--control-active);
+                outline-offset: 2px;
+            }
+
+            .page-control[aria-pressed="true"] {
+                color: var(--control-active);
+                border-color: currentColor;
+            }
+
+            .page-control:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+                transform: none;
+            }
+
+            .page-control svg {
+                width: 1.35rem;
+                height: 1.35rem;
+                fill: none;
+                stroke: currentColor;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+                stroke-width: 1.8;
+            }
+
             .pd4web-sound-switch {
                 display: flex;
                 justify-content: center;
@@ -102,13 +161,113 @@
             <progress id="progress" value="0" max="100"></progress>
         </div>
 
+        <div class="page-controls" aria-label="Page controls">
+            <button
+                class="page-control"
+                id="WakeLockButton"
+                type="button"
+                aria-label="Keep screen awake"
+                aria-pressed="false"
+                title="Keep screen awake"
+            >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9 18h6" />
+                    <path d="M10 22h4" />
+                    <path d="M8.5 14.5A6 6 0 1 1 15.5 14.5C14.6 15.2 14 16 14 18h-4c0-2-.6-2.8-1.5-3.5Z" />
+                </svg>
+            </button>
+            <button
+                class="page-control"
+                id="FullscreenButton"
+                type="button"
+                aria-label="Enter full screen"
+                aria-pressed="false"
+                title="Enter full screen"
+            >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5" />
+                </svg>
+            </button>
+        </div>
+
         <!-- All the styles are in the pd4web.style.css -->
         <span class="pd4web-sound-switch" id="Pd4WebAudioSwitch"></span>
         <canvas tabindex="0" class="pd4web-patch-canvas" id="Pd4WebCanvas"></canvas>
         <script>
             const getEId = (id) => document.getElementById(id);
-            const ui = { status: getEId("status"), progress: getEId("progress"), loader: getEId("wasm-loader") };
+            const ui = {
+                status: getEId("status"),
+                progress: getEId("progress"),
+                loader: getEId("wasm-loader"),
+                fullscreen: getEId("FullscreenButton"),
+                wakeLock: getEId("WakeLockButton"),
+            };
             var Pd4Web = null;
+
+            const updateFullscreenButton = () => {
+                const isFullscreen = Boolean(document.fullscreenElement);
+                const label = isFullscreen ? "Exit full screen" : "Enter full screen";
+                ui.fullscreen.setAttribute("aria-pressed", String(isFullscreen));
+                ui.fullscreen.setAttribute("aria-label", label);
+                ui.fullscreen.title = label;
+            };
+
+            if (document.documentElement.requestFullscreen) {
+                ui.fullscreen.addEventListener("click", async () => {
+                    try {
+                        if (document.fullscreenElement) await document.exitFullscreen();
+                        else await document.documentElement.requestFullscreen();
+                    } catch (error) {
+                        console.warn("Full screen could not be changed:", error);
+                    }
+                });
+                document.addEventListener("fullscreenchange", updateFullscreenButton);
+            } else {
+                ui.fullscreen.disabled = true;
+                ui.fullscreen.title = "Full screen is not supported by this browser";
+            }
+
+            let wakeLock = null;
+            let keepScreenAwake = false;
+
+            const updateWakeLockButton = () => {
+                const isActive = Boolean(wakeLock && !wakeLock.released);
+                const label = isActive ? "Allow screen to sleep" : "Keep screen awake";
+                ui.wakeLock.setAttribute("aria-pressed", String(isActive));
+                ui.wakeLock.setAttribute("aria-label", label);
+                ui.wakeLock.title = label;
+            };
+
+            const requestWakeLock = async () => {
+                if (!keepScreenAwake || document.visibilityState !== "visible" || wakeLock) return;
+                try {
+                    wakeLock = await navigator.wakeLock.request("screen");
+                    wakeLock.addEventListener("release", () => {
+                        wakeLock = null;
+                        updateWakeLockButton();
+                    });
+                    updateWakeLockButton();
+                } catch (error) {
+                    keepScreenAwake = false;
+                    updateWakeLockButton();
+                    console.warn("Screen wake lock could not be acquired:", error);
+                }
+            };
+
+            if ("wakeLock" in navigator) {
+                ui.wakeLock.addEventListener("click", async () => {
+                    keepScreenAwake = !keepScreenAwake;
+                    if (keepScreenAwake) await requestWakeLock();
+                    else if (wakeLock) await wakeLock.release();
+                    updateWakeLockButton();
+                });
+                document.addEventListener("visibilitychange", () => {
+                    if (document.visibilityState === "visible") requestWakeLock();
+                });
+            } else {
+                ui.wakeLock.disabled = true;
+                ui.wakeLock.title = "Screen wake lock is not supported by this browser";
+            }
 
             /* Download the wasm file */
             const fetchWasm = (url) =>
