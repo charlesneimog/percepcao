@@ -1,0 +1,13 @@
+#N canvas 0 0 925 1131 10;
+#N canvas 0 0 925 1131 canva 1;
+#X obj 23 14 bng 45 250 50 0 empty empty empty 0 -9 0 10 #fcfcfc #000000 #000000;
+#X obj 88 14 bng 45 250 50 0 empty empty empty 0 -9 0 10 #fcfcfc #000000 #000000;
+#X text 25 57 Dórico;
+#X text 91 57 Frígio;
+#X obj 153 14 bng 45 250 50 0 empty empty empty 0 -9 0 10 #fcfcfc #000000 #000000;
+#X text 159 57 Lídio;
+#X obj 218 14 bng 45 250 50 0 empty empty empty 0 -9 0 10 #fcfcfc #000000 #000000;
+#X text 211 57 Mixolídio;
+#X coords 0 -1 1 1 280 450 2 10 10;
+#X restore 3 2 pd canva;
+#X coords 0 1131 1 1130 300 450 0;
