@@ -1,0 +1,1110 @@
+<!doctype html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="theme-color" content="#18332f" />
+        <meta name="description" content="Exercício de percepção de modos e sequências musicais." />
+        <title>Ouvido Modal</title>
+        <link rel="manifest" href="manifest.json" />
+        <link rel="apple-touch-icon" href="icon-192.png" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <!-- Must be loaded before pd4web.js. -->
+        <script src="./pd4web.threads.js"></script>
+        <script src="./pd4web.js"></script>
+        <script src="./vexflow.js"></script>
+        <style>
+            :root {
+                color-scheme: light;
+                --ink: #18332f;
+                --muted: #66736f;
+                --paper: #fffdf6;
+                --canvas: #f2eee2;
+                --line: #d8d5c9;
+                --accent: #e85d3f;
+                --accent-dark: #bd3d26;
+                --lime: #cfe870;
+                --shadow: 0 18px 48px rgba(24, 51, 47, 0.12);
+            }
+            * {
+                box-sizing: border-box;
+            }
+            html {
+                min-height: 100%;
+                background: var(--canvas);
+            }
+            body {
+                min-height: 100vh;
+                min-height: 100dvh;
+                margin: 0;
+                color: var(--ink);
+                background:
+                    radial-gradient(circle at 8% 8%, rgba(207, 232, 112, 0.38), transparent 30rem),
+                    radial-gradient(circle at 100% 22%, rgba(232, 93, 63, 0.12), transparent 28rem), var(--canvas);
+                font-family:
+                    Inter,
+                    ui-sans-serif,
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    "Segoe UI",
+                    sans-serif;
+                -webkit-font-smoothing: antialiased;
+                touch-action: manipulation;
+            }
+            button {
+                font: inherit;
+            }
+            button:focus-visible {
+                outline: 3px solid rgba(232, 93, 63, 0.35);
+                outline-offset: 3px;
+            }
+            .app-shell {
+                width: min(100%, 760px);
+                margin: 0 auto;
+                padding: max(22px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom));
+            }
+            .topbar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+                margin-bottom: 20px;
+            }
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 11px;
+            }
+            .brand-mark {
+                display: grid;
+                place-items: center;
+                width: 42px;
+                height: 42px;
+                border-radius: 50%;
+                color: var(--paper);
+                background: var(--ink);
+                font:
+                    24px Georgia,
+                    serif;
+                box-shadow: 4px 4px 0 var(--lime);
+            }
+            .brand-text {
+                line-height: 1.05;
+            }
+            .brand-text strong,
+            .brand-text span {
+                display: block;
+            }
+            .brand-text strong {
+                font:
+                    600 19px Georgia,
+                    serif;
+                letter-spacing: -0.02em;
+            }
+            .brand-text span {
+                margin-top: 4px;
+                color: var(--muted);
+                font-size: 11px;
+                font-weight: 750;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+            }
+            .score {
+                min-width: 70px;
+                padding: 8px 12px;
+                border: 1px solid rgba(24, 51, 47, 0.13);
+                border-radius: 999px;
+                background: rgba(255, 253, 246, 0.7);
+                font-size: 13px;
+                font-weight: 750;
+                text-align: center;
+            }
+            .hero {
+                position: relative;
+                overflow: hidden;
+                padding: 25px 22px 23px;
+                border-radius: 25px;
+                color: var(--paper);
+                background: var(--ink);
+                box-shadow: var(--shadow);
+            }
+            .hero::after {
+                position: absolute;
+                right: -20px;
+                bottom: -55px;
+                width: 180px;
+                height: 180px;
+                border: 34px solid rgba(207, 232, 112, 0.13);
+                border-radius: 50%;
+                content: "";
+            }
+            .eyebrow {
+                margin: 0 0 8px;
+                color: var(--lime);
+                font-size: 11px;
+                font-weight: 800;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+            }
+            h1 {
+                max-width: 520px;
+                margin: 0;
+                font:
+                    500 clamp(29px, 7.8vw, 46px)/1.03 Georgia,
+                    serif;
+                letter-spacing: -0.04em;
+            }
+            .hero-copy {
+                max-width: 470px;
+                margin: 12px 0 20px;
+                color: rgba(255, 253, 246, 0.72);
+                font-size: 14px;
+                line-height: 1.5;
+            }
+            .audio-actions {
+                position: relative;
+                z-index: 1;
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .audio-button,
+            .new-button,
+            .play-button,
+            .submit-button,
+            .secondary-button {
+                min-height: 52px;
+                border: 0;
+                border-radius: 15px;
+                cursor: pointer;
+                font-weight: 800;
+                transition:
+                    transform 140ms ease,
+                    background-color 140ms ease,
+                    opacity 140ms ease;
+            }
+            .audio-button:active,
+            .new-button:active,
+            .play-button:active,
+            .submit-button:active,
+            .secondary-button:active,
+            .option-button:active,
+            .melody-button:active {
+                transform: scale(0.97);
+            }
+            .audio-button {
+                position: relative;
+                padding: 0 18px 0 49px;
+                color: var(--ink);
+                background-color: var(--lime);
+                background-position: 17px center;
+                background-repeat: no-repeat;
+                background-size: 23px;
+                text-align: left;
+            }
+            .audio-button.is-on {
+                background-color: #e3f5a4;
+            }
+            .exercise-controls {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                margin-top: 15px;
+                padding: 10px;
+                border: 1px solid rgba(24, 51, 47, 0.09);
+                border-radius: 19px;
+                background: rgba(255, 253, 246, 0.76);
+                box-shadow: 0 8px 24px rgba(24, 51, 47, 0.06);
+            }
+            .play-button,
+            .new-button {
+                padding: 0 14px;
+            }
+            .play-button {
+                color: var(--paper);
+                background: var(--accent);
+            }
+            .new-button {
+                color: var(--ink);
+                background: var(--lime);
+            }
+            .control-icon {
+                margin-right: 7px;
+                font-size: 17px;
+                line-height: 0;
+            }
+            button:disabled {
+                cursor: not-allowed;
+                opacity: 0.45;
+            }
+            .steps {
+                display: grid;
+                gap: 14px;
+                margin-top: 15px;
+            }
+            .step-card {
+                padding: 21px;
+                border: 1px solid rgba(24, 51, 47, 0.09);
+                border-radius: 23px;
+                background: rgba(255, 253, 246, 0.93);
+                box-shadow: 0 10px 30px rgba(24, 51, 47, 0.07);
+                transition: opacity 180ms ease;
+            }
+            .step-card.is-locked {
+                opacity: 0.55;
+            }
+            .step-card.is-locked .answer-slots,
+            .step-card.is-locked .melody-grid,
+            .step-card.is-locked .letter-tools {
+                display: none;
+            }
+            .step-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 14px;
+                margin-bottom: 17px;
+            }
+            .step-title {
+                display: flex;
+                align-items: center;
+                gap: 11px;
+            }
+            .step-number {
+                display: grid;
+                flex: 0 0 auto;
+                place-items: center;
+                width: 31px;
+                height: 31px;
+                border-radius: 50%;
+                color: var(--paper);
+                background: var(--ink);
+                font-size: 13px;
+                font-weight: 850;
+            }
+            .step-card.is-complete .step-number {
+                color: var(--ink);
+                background: var(--lime);
+            }
+            h2 {
+                margin: 0;
+                font:
+                    600 21px Georgia,
+                    serif;
+                letter-spacing: -0.02em;
+            }
+            .step-hint {
+                color: var(--muted);
+                font-size: 12px;
+                text-align: right;
+            }
+            .mode-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 10px;
+            }
+            .option-button {
+                min-height: 56px;
+                padding: 11px;
+                border: 1px solid var(--line);
+                border-radius: 15px;
+                color: var(--ink);
+                background: #faf8f0;
+                cursor: pointer;
+                font-weight: 750;
+                transition:
+                    transform 140ms ease,
+                    border-color 140ms ease,
+                    background-color 140ms ease;
+            }
+            .option-button[aria-pressed="true"] {
+                border-color: var(--ink);
+                background: var(--lime);
+                box-shadow: inset 0 0 0 1px var(--ink);
+            }
+            .answer-slots {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 9px;
+                margin-bottom: 15px;
+            }
+            .answer-slot {
+                position: relative;
+                display: grid;
+                place-items: center;
+                min-width: 0;
+                min-height: 70px;
+                overflow: hidden;
+                border: 1.5px dashed #c6c5ba;
+                border-radius: 15px;
+                color: #b3b2a9;
+                background: #faf8f0;
+                font:
+                    700 25px Georgia,
+                    serif;
+                text-transform: uppercase;
+            }
+            .answer-slot.is-filled {
+                border-color: var(--accent);
+                border-style: solid;
+                color: var(--ink);
+                background: #fffdf6;
+            }
+            .slot-number {
+                position: absolute;
+                top: 7px;
+                left: 8px;
+                z-index: 1;
+                display: grid;
+                place-items: center;
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                color: var(--paper);
+                background: var(--accent);
+                font: 800 11px/1 ui-sans-serif, sans-serif;
+            }
+            .answer-score {
+                width: 100%;
+                min-width: 0;
+                margin-top: 3px;
+            }
+            .melody-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .melody-button {
+                position: relative;
+                min-width: 0;
+                min-height: 82px;
+                overflow: hidden;
+                padding: 2px 0;
+                border: 1px solid var(--line);
+                border-radius: 13px;
+                color: var(--ink);
+                background: #faf8f0;
+                cursor: pointer;
+                transition:
+                    transform 140ms ease,
+                    border-color 140ms ease,
+                    background-color 140ms ease;
+            }
+            .melody-button:hover:not(:disabled) {
+                border-color: rgba(24, 51, 47, 0.55);
+                background: #fffdf6;
+            }
+            .melody-button.is-used {
+                border-color: var(--accent);
+                box-shadow: inset 0 0 0 1px var(--accent);
+            }
+            .melody-score {
+                display: grid;
+                place-items: center;
+                width: 100%;
+                min-width: 0;
+                pointer-events: none;
+            }
+            .melody-score svg {
+                display: block;
+                width: 100%;
+                height: auto;
+            }
+            .answer-score svg {
+                display: block;
+                width: 100%;
+                height: auto;
+                margin: 0 auto;
+            }
+            .selection-badge {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                display: none;
+                min-width: 25px;
+                height: 25px;
+                padding: 0 7px;
+                place-items: center;
+                border-radius: 999px;
+                color: var(--paper);
+                background: var(--accent);
+                font-size: 11px;
+                font-weight: 850;
+                line-height: 1;
+            }
+            .melody-button.is-used .selection-badge {
+                display: grid;
+            }
+            .visually-hidden {
+                position: absolute !important;
+                width: 1px !important;
+                height: 1px !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+                clip: rect(0, 0, 0, 0) !important;
+                white-space: nowrap !important;
+                border: 0 !important;
+            }
+            .letter-tools {
+                display: flex;
+                justify-content: flex-end;
+                gap: 14px;
+                margin-top: 13px;
+            }
+            .text-button {
+                min-height: 38px;
+                padding: 0;
+                border: 0;
+                color: var(--muted);
+                background: transparent;
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: 750;
+                text-decoration: underline;
+                text-underline-offset: 3px;
+            }
+            .result-panel {
+                display: none;
+                margin-top: 14px;
+                padding: 18px;
+                border-radius: 19px;
+                background: #f9dfd8;
+            }
+            .result-panel.is-visible {
+                display: block;
+                animation: rise 220ms ease both;
+            }
+            .result-panel.is-correct {
+                background: #e3f2d1;
+            }
+            .result-panel strong {
+                display: block;
+                margin-bottom: 4px;
+                font:
+                    600 20px Georgia,
+                    serif;
+            }
+            .result-panel p {
+                margin: 0;
+                color: #5d6059;
+                font-size: 14px;
+                line-height: 1.45;
+            }
+            .form-actions {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 9px;
+                margin-top: 14px;
+            }
+            .submit-button {
+                width: 100%;
+                color: var(--paper);
+                background: var(--accent);
+            }
+            .submit-button:not(:disabled):hover {
+                background: var(--accent-dark);
+            }
+            .secondary-button {
+                width: 100%;
+                color: var(--ink);
+                background: transparent;
+                border: 1px solid rgba(24, 51, 47, 0.22);
+            }
+            .loading-screen {
+                position: fixed;
+                z-index: 20;
+                inset: 0;
+                display: grid;
+                place-items: center;
+                padding: 24px;
+                color: var(--paper);
+                background: var(--ink);
+                transition:
+                    opacity 260ms ease,
+                    visibility 260ms ease;
+            }
+            .loading-screen.is-hidden {
+                visibility: hidden;
+                opacity: 0;
+            }
+            .loader-box {
+                width: min(310px, 100%);
+                text-align: center;
+            }
+            .loader-note {
+                display: block;
+                margin-bottom: 13px;
+                color: var(--lime);
+                font:
+                    38px Georgia,
+                    serif;
+            }
+            #status {
+                display: block;
+                margin-bottom: 13px;
+                font-size: 14px;
+            }
+            #progress {
+                width: 100%;
+                height: 8px;
+                overflow: hidden;
+                border: 0;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.14);
+            }
+            progress::-webkit-progress-bar {
+                background: rgba(255, 255, 255, 0.14);
+            }
+            progress::-webkit-progress-value {
+                border-radius: 999px;
+                background: var(--lime);
+            }
+            progress::-moz-progress-bar {
+                border-radius: 999px;
+                background: var(--lime);
+            }
+            .pd4web-patch-canvas {
+                position: fixed;
+                pointer-events: none;
+                visibility: hidden;
+                width: 1px !important;
+                height: 1px !important;
+                opacity: 0;
+            }
+            @keyframes rise {
+                from {
+                    opacity: 0;
+                    transform: translateY(5px);
+                }
+            }
+            @media (min-width: 620px) {
+                .app-shell {
+                    padding-right: 24px;
+                    padding-left: 24px;
+                }
+                .hero,
+                .step-card {
+                    padding: 27px;
+                }
+                .melody-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+                .form-actions.has-secondary {
+                    grid-template-columns: 1fr 1fr;
+                }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                *,
+                *::before,
+                *::after {
+                    scroll-behavior: auto !important;
+                    animation-duration: 0.01ms !important;
+                    transition-duration: 0.01ms !important;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="loading-screen" id="wasm-loader" role="status" aria-live="polite">
+            <div class="loader-box">
+                <span class="loader-note" aria-hidden="true">♪</span>
+                <span id="status">Preparando os sons…</span>
+                <progress id="progress" value="0" max="100"></progress>
+            </div>
+        </div>
+
+        <main class="app-shell">
+            <header class="topbar">
+                <div class="brand">
+                    <span class="brand-mark" aria-hidden="true">♪</span>
+                    <span class="brand-text"><strong>Ouvido Modal</strong><span>Percepção musical</span></span>
+                </div>
+                <div class="score" aria-label="Pontuação"><span id="scoreValue">0</span> acertos</div>
+            </header>
+
+            <section class="hero" aria-labelledby="page-title">
+                <p class="eyebrow">Exercício de escuta</p>
+                <h1 id="page-title">Escute, reconheça e responda.</h1>
+                <p class="hero-copy">
+                    Ative o áudio, ouça o trecho e identifique primeiro o modo e depois as quatro melodias.
+                </p>
+                <div class="audio-actions">
+                    <button class="audio-button" id="Pd4WebAudioSwitch" type="button">
+                        <span id="audioLabel">Ativar áudio</span>
+                    </button>
+                </div>
+            </section>
+
+            <div class="exercise-controls" aria-label="Controles do exercício">
+                <button class="play-button" id="playExercise" type="button" disabled>
+                    <span class="control-icon" aria-hidden="true">▶</span>Tocar
+                </button>
+                <button class="new-button" id="newExercise" type="button" disabled>
+                    <span class="control-icon" aria-hidden="true">↻</span>Novo exercício
+                </button>
+            </div>
+
+            <div class="steps">
+                <section class="step-card" id="modeStep" aria-labelledby="mode-title">
+                    <div class="step-header">
+                        <div class="step-title">
+                            <span class="step-number">1</span>
+                            <h2 id="mode-title">Qual é o modo?</h2>
+                        </div>
+                        <span class="step-hint">Escolha uma opção</span>
+                    </div>
+                    <div class="mode-grid" id="modeOptions">
+                        <button class="option-button" type="button" data-mode="dorico" aria-pressed="false">
+                            Dórico
+                        </button>
+                        <button class="option-button" type="button" data-mode="frigio" aria-pressed="false">
+                            Frígio
+                        </button>
+                        <button class="option-button" type="button" data-mode="lidio" aria-pressed="false">
+                            Lídio
+                        </button>
+                        <button class="option-button" type="button" data-mode="mixolidio" aria-pressed="false">
+                            Mixolídio
+                        </button>
+                    </div>
+                </section>
+
+                <section
+                    class="step-card is-locked"
+                    id="letterStep"
+                    aria-labelledby="letters-title"
+                    aria-disabled="true"
+                >
+                    <div class="step-header">
+                        <div class="step-title">
+                            <span class="step-number">2</span>
+                            <h2 id="letters-title">Qual é a sequência melódica?</h2>
+                        </div>
+                        <span class="step-hint" id="letterCounter">0 de 4</span>
+                    </div>
+                    <div class="answer-slots" id="answerSlots" aria-label="Sua sequência">
+                        <span class="answer-slot">1</span><span class="answer-slot">2</span
+                        ><span class="answer-slot">3</span><span class="answer-slot">4</span>
+                    </div>
+                    <div class="melody-grid" id="letterOptions">
+                        <button class="melody-button" type="button" data-letter="a" aria-label="Selecionar melodia 1" disabled><span class="melody-score" aria-hidden="true"></span><span class="selection-badge" aria-hidden="true"></span></button>
+                        <button class="melody-button" type="button" data-letter="b" aria-label="Selecionar melodia 2" disabled><span class="melody-score" aria-hidden="true"></span><span class="selection-badge" aria-hidden="true"></span></button>
+                        <button class="melody-button" type="button" data-letter="c" aria-label="Selecionar melodia 3" disabled><span class="melody-score" aria-hidden="true"></span><span class="selection-badge" aria-hidden="true"></span></button>
+                        <button class="melody-button" type="button" data-letter="d" aria-label="Selecionar melodia 4" disabled><span class="melody-score" aria-hidden="true"></span><span class="selection-badge" aria-hidden="true"></span></button>
+                        <button class="melody-button" type="button" data-letter="e" aria-label="Selecionar melodia 5" disabled><span class="melody-score" aria-hidden="true"></span><span class="selection-badge" aria-hidden="true"></span></button>
+                        <button class="melody-button" type="button" data-letter="f" aria-label="Selecionar melodia 6" disabled><span class="melody-score" aria-hidden="true"></span><span class="selection-badge" aria-hidden="true"></span></button>
+                        <button class="melody-button" type="button" data-letter="g" aria-label="Selecionar melodia 7" disabled><span class="melody-score" aria-hidden="true"></span><span class="selection-badge" aria-hidden="true"></span></button>
+                        <button class="melody-button" type="button" data-letter="h" aria-label="Selecionar melodia 8" disabled><span class="melody-score" aria-hidden="true"></span><span class="selection-badge" aria-hidden="true"></span></button>
+                        <button class="melody-button" type="button" data-letter="i" aria-label="Selecionar melodia 9" disabled><span class="melody-score" aria-hidden="true"></span><span class="selection-badge" aria-hidden="true"></span></button>
+                    </div>
+                    <div class="letter-tools">
+                        <button class="text-button" id="undoLetter" type="button" disabled>Apagar última</button>
+                        <button class="text-button" id="clearLetters" type="button" disabled>Limpar</button>
+                    </div>
+                </section>
+            </div>
+
+            <div class="result-panel" id="resultPanel" role="status" aria-live="polite">
+                <strong id="resultTitle"></strong>
+                <p id="resultMessage"></p>
+            </div>
+            <div class="form-actions" id="formActions">
+                <button class="submit-button" id="submitAnswer" type="button" disabled>Conferir resposta</button>
+                <button class="secondary-button" id="listenAgain" type="button" disabled>Ouvir novamente</button>
+            </div>
+        </main>
+
+        <canvas tabindex="-1" class="pd4web-patch-canvas" id="Pd4WebCanvas" aria-hidden="true"></canvas>
+
+        <script>
+            const byId = (id) => document.getElementById(id);
+            const ui = {
+                status: byId("status"),
+                progress: byId("progress"),
+                loader: byId("wasm-loader"),
+                audioButton: byId("Pd4WebAudioSwitch"),
+                audioLabel: byId("audioLabel"),
+                playExercise: byId("playExercise"),
+                newExercise: byId("newExercise"),
+                listenAgain: byId("listenAgain"),
+                modeStep: byId("modeStep"),
+                modeOptions: [...document.querySelectorAll("[data-mode]")],
+                letterStep: byId("letterStep"),
+                letterOptions: [...document.querySelectorAll("[data-letter]")],
+                slots: [...document.querySelectorAll(".answer-slot")],
+                letterCounter: byId("letterCounter"),
+                undoLetter: byId("undoLetter"),
+                clearLetters: byId("clearLetters"),
+                submitAnswer: byId("submitAnswer"),
+                resultPanel: byId("resultPanel"),
+                resultTitle: byId("resultTitle"),
+                resultMessage: byId("resultMessage"),
+                formActions: byId("formActions"),
+                score: byId("scoreValue"),
+            };
+            const state = {
+                pdReady: false,
+                audioOn: false,
+                answerMode: null,
+                answerLetters: [],
+                selectedMode: null,
+                selectedLetters: [],
+                solved: false,
+                score: 0,
+            };
+            let Pd4Web = null;
+            let renderedMode = null;
+
+            const MELODY_KEYS = ["a", "b", "c", "d", "e", "f", "g", "h", "i"];
+            const MODE_MELODIES = {
+                lidio: {
+                    a: [76, 78, 76, 75, 73],
+                    b: [76, 73, 75, 76, 78],
+                    c: [76, 70, 71, 73, 75],
+                    d: [76, 73, 73, 73, 73],
+                    e: [76, 70, 70, 70, 70],
+                    f: [76, 78, 78, 78, 78],
+                    g: [76, 73, 78, 73, 70],
+                    h: [76, 78, 73, 70, 73],
+                    i: [76, 70, 73, 78, 73],
+                },
+                mixolidio: {
+                    a: [76, 78, 76, 74, 73],
+                    b: [76, 74, 76, 78, 80],
+                    c: [76, 69, 71, 73, 74],
+                    d: [76, 74, 74, 74, 74],
+                    e: [76, 69, 69, 69, 69],
+                    f: [76, 78, 78, 78, 78],
+                    g: [76, 74, 78, 74, 69],
+                    h: [76, 78, 74, 69, 74],
+                    i: [76, 69, 74, 78, 74],
+                },
+                dorico: {
+                    a: [76, 76, 74, 73, 71],
+                    b: [76, 73, 74, 76, 78],
+                    c: [76, 69, 71, 73, 74],
+                    d: [76, 73, 73, 73, 73],
+                    e: [76, 69, 69, 69, 69],
+                    f: [76, 76, 76, 76, 76],
+                    g: [76, 73, 76, 73, 69],
+                    h: [76, 76, 73, 69, 73],
+                    i: [76, 69, 73, 76, 73],
+                },
+                frigio: {
+                    a: [76, 77, 76, 74, 72],
+                    b: [76, 72, 74, 76, 77],
+                    c: [76, 69, 71, 72, 74],
+                    d: [76, 72, 72, 72, 72],
+                    e: [76, 69, 69, 69, 69],
+                    f: [76, 77, 77, 77, 77],
+                    g: [76, 72, 77, 72, 69],
+                    h: [76, 77, 72, 69, 72],
+                    i: [76, 69, 72, 77, 72],
+                },
+            };
+            const PITCH_NAMES = ["c", "c#", "d", "d#", "e", "f", "f#", "g", "g#", "a", "a#", "b"];
+
+            function midiToVexKey(midi) {
+                const name = PITCH_NAMES[midi % 12];
+                return {
+                    accidental: name.length > 1 ? name.slice(1) : null,
+                    key: `${name}/${Math.floor(midi / 12) - 1}`,
+                };
+            }
+
+            function makeStaveNotes(midis, duration) {
+                const VF = window.Vex.Flow;
+                const accidentalsInMeasure = new Set();
+                return midis.map((midi) => {
+                    const pitch = midiToVexKey(midi);
+                    const note = new VF.StaveNote({ clef: "treble", keys: [pitch.key], duration });
+                    if (pitch.accidental && !accidentalsInMeasure.has(pitch.key)) {
+                        note.addModifier(new VF.Accidental(pitch.accidental));
+                        accidentalsInMeasure.add(pitch.key);
+                    }
+                    return note;
+                });
+            }
+
+            function drawMelody(container, midiNotes, compact = false) {
+                if (!container || !midiNotes || !window.Vex?.Flow) return;
+                const VF = window.Vex.Flow;
+                const width = Math.max(compact ? 125 : 245, Math.floor(container.clientWidth || 0));
+                const height = compact ? 70 : 82;
+                const left = compact ? 2 : 4;
+                const firstWidth = Math.round(width * (compact ? 0.38 : 0.44));
+                const secondWidth = width - firstWidth - left * 2;
+
+                container.replaceChildren();
+                const renderer = new VF.Renderer(container, VF.Renderer.Backends.SVG);
+                renderer.resize(width, height);
+                const context = renderer.getContext();
+
+                const scale = compact ? 0.85 : 0.90;
+                context.scale(scale, scale);
+
+                const staveY = compact ? -13 : -7;
+                const firstStave = new VF.Stave(left, staveY, firstWidth);
+                const secondStave = new VF.Stave(left + firstWidth, staveY, secondWidth);
+
+                if (!compact) firstStave.addClef("treble").addTimeSignature("4/4");
+                firstStave.setContext(context).draw();
+                secondStave.setContext(context).draw();
+
+                const firstVoice = new VF.Voice({ num_beats: 4, beat_value: 4 }).addTickables(
+                    makeStaveNotes([midiNotes[0]], "w"),
+                );
+                const secondVoice = new VF.Voice({ num_beats: 4, beat_value: 4 }).addTickables(
+                    makeStaveNotes(midiNotes.slice(1), "q"),
+                );
+                const firstPadding = compact ? 16 : 61;
+                new VF.Formatter().joinVoices([firstVoice]).format([firstVoice], Math.max(24, firstWidth - firstPadding));
+                new VF.Formatter().joinVoices([secondVoice]).format([secondVoice], Math.max(70, secondWidth - 18));
+                firstVoice.draw(context, firstStave);
+                secondVoice.draw(context, secondStave);
+            }
+
+            function renderMelodyChoices(mode) {
+                renderedMode = mode;
+                ui.letterOptions.forEach((button) => {
+                    const score = button.querySelector(".melody-score");
+                    if (!mode) score.replaceChildren();
+                    else drawMelody(score, MODE_MELODIES[mode][button.dataset.letter]);
+                });
+            }
+
+            function renderAnswerSlots() {
+                ui.slots.forEach((slot, index) => {
+                    const letter = state.selectedLetters[index];
+                    slot.replaceChildren();
+                    slot.classList.toggle("is-filled", Boolean(letter));
+                    if (!letter || !state.selectedMode) {
+                        slot.textContent = String(index + 1);
+                        slot.setAttribute("aria-label", `Posição ${index + 1}, vazia`);
+                        return;
+                    }
+                    const number = document.createElement("span");
+                    number.className = "slot-number";
+                    number.textContent = String(index + 1);
+                    const score = document.createElement("span");
+                    score.className = "answer-score";
+                    score.setAttribute("aria-hidden", "true");
+                    slot.append(number, score);
+                    slot.setAttribute("aria-label", `Melodia ${MELODY_KEYS.indexOf(letter) + 1}, posição ${index + 1}`);
+                    drawMelody(score, MODE_MELODIES[state.selectedMode][letter], true);
+                });
+            }
+
+            const normalize = (value) =>
+                String(value ?? "")
+                    .trim()
+                    .toLocaleLowerCase("pt-BR")
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "");
+
+            const fetchWasm = (url) =>
+                new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open("GET", url);
+                    xhr.responseType = "arraybuffer";
+                    xhr.onprogress = ({ loaded, total, lengthComputable }) => {
+                        if (!lengthComputable) return;
+                        const percentage = Math.floor((loaded / total) * 100);
+                        ui.progress.value = percentage;
+                        ui.status.textContent = `Preparando os sons… ${percentage}%`;
+                    };
+                    xhr.onload = () =>
+                        xhr.status === 200
+                            ? resolve(xhr.response)
+                            : reject(new Error(`Falha ao carregar ${url} (${xhr.status}).`));
+                    xhr.onerror = () => reject(new Error(`Erro de rede ao carregar ${url}.`));
+                    xhr.send();
+                });
+
+            const answerIsReady = () => Boolean(state.answerMode && state.answerLetters.length === 4);
+            const canEditLetters = () => Boolean(state.selectedMode && !state.solved);
+
+            function render() {
+                if (renderedMode !== state.selectedMode) renderMelodyChoices(state.selectedMode);
+                ui.modeOptions.forEach((button) => {
+                    button.setAttribute("aria-pressed", String(button.dataset.mode === state.selectedMode));
+                    button.disabled = state.solved;
+                });
+                ui.modeStep.classList.toggle("is-complete", Boolean(state.selectedMode));
+                ui.letterStep.classList.toggle("is-locked", !state.selectedMode);
+                ui.letterStep.classList.toggle("is-complete", state.selectedLetters.length === 4);
+                ui.letterStep.setAttribute("aria-disabled", String(!state.selectedMode));
+                renderAnswerSlots();
+                ui.letterCounter.textContent = `${state.selectedLetters.length} de 4`;
+                ui.letterOptions.forEach((button) => {
+                    button.disabled = !canEditLetters() || state.selectedLetters.length >= 4;
+                    const positions = state.selectedLetters
+                        .map((letter, index) => (letter === button.dataset.letter ? index + 1 : null))
+                        .filter(Boolean);
+                    button.classList.toggle("is-used", positions.length > 0);
+                    button.querySelector(".selection-badge").textContent = positions.join(", ");
+                });
+                ui.undoLetter.disabled = !canEditLetters() || state.selectedLetters.length === 0;
+                ui.clearLetters.disabled = !canEditLetters() || state.selectedLetters.length === 0;
+                ui.submitAnswer.disabled =
+                    state.solved || !state.selectedMode || state.selectedLetters.length !== 4 || !answerIsReady();
+                ui.submitAnswer.textContent = state.solved ? "Resposta correta" : "Conferir resposta";
+                ui.playExercise.disabled = !state.pdReady || !state.audioOn;
+                ui.newExercise.disabled = !state.pdReady || !state.audioOn;
+                ui.listenAgain.disabled = !state.pdReady || !state.audioOn;
+                ui.score.textContent = state.score;
+            }
+
+            function hideResult() {
+                ui.resultPanel.classList.remove("is-visible", "is-correct");
+                ui.formActions.classList.remove("has-secondary");
+            }
+
+            function resetRound(sendNewAnswer = true) {
+                state.answerMode = null;
+                state.answerLetters = [];
+                state.selectedMode = null;
+                state.selectedLetters = [];
+                state.solved = false;
+                hideResult();
+                render();
+                if (sendNewAnswer && state.pdReady) Pd4Web.sendBang("web-new");
+            }
+
+            function listen() {
+                if (!state.pdReady || !state.audioOn) return;
+                Pd4Web.sendBang("web-play");
+                ui.listenAgain.textContent = "Tocando…";
+                window.setTimeout(() => (ui.listenAgain.textContent = "Ouvir novamente"), 900);
+            }
+
+            function showResult(isCorrect, title, message) {
+                ui.resultTitle.textContent = title;
+                ui.resultMessage.textContent = message;
+                ui.resultPanel.classList.toggle("is-correct", isCorrect);
+                ui.resultPanel.classList.add("is-visible");
+                ui.formActions.classList.add("has-secondary");
+                ui.resultPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }
+
+            ui.audioButton.addEventListener("click", () => {
+                state.audioOn = !state.audioOn;
+                ui.audioButton.classList.toggle("is-on", state.audioOn);
+                ui.audioLabel.textContent = state.audioOn ? "Áudio ativo" : "Ativar áudio";
+                render();
+            });
+
+            ui.playExercise.addEventListener("click", () => {
+                if (!state.pdReady || !state.audioOn) return;
+                Pd4Web.sendBang("web-play");
+            });
+
+            ui.newExercise.addEventListener("click", () => {
+                if (!state.pdReady || !state.audioOn) return;
+                resetRound(false);
+                Pd4Web.sendBang("web-new");
+            });
+
+            ui.listenAgain.addEventListener("click", listen);
+
+            ui.modeOptions.forEach((button) =>
+                button.addEventListener("click", () => {
+                    if (state.solved) return;
+                    state.selectedMode = button.dataset.mode;
+                    hideResult();
+                    render();
+                    ui.letterStep.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                }),
+            );
+
+            ui.letterOptions.forEach((button) =>
+                button.addEventListener("click", () => {
+                    if (!canEditLetters() || state.selectedLetters.length >= 4) return;
+                    state.selectedLetters.push(button.dataset.letter);
+                    hideResult();
+                    render();
+                }),
+            );
+
+            ui.undoLetter.addEventListener("click", () => {
+                state.selectedLetters.pop();
+                hideResult();
+                render();
+            });
+
+            ui.clearLetters.addEventListener("click", () => {
+                state.selectedLetters = [];
+                hideResult();
+                render();
+            });
+
+            let resizeTimer = null;
+            window.addEventListener("resize", () => {
+                window.clearTimeout(resizeTimer);
+                resizeTimer = window.setTimeout(() => {
+                    if (state.selectedMode) {
+                        renderMelodyChoices(state.selectedMode);
+                        renderAnswerSlots();
+                    }
+                }, 120);
+            });
+
+            ui.submitAnswer.addEventListener("click", () => {
+                if (!answerIsReady()) {
+                    showResult(false, "Aguarde um instante", "O novo exercício ainda está sendo preparado.");
+                    return;
+                }
+                const modeIsCorrect = state.selectedMode === state.answerMode;
+                const lettersAreCorrect = state.selectedLetters.every(
+                    (letter, index) => letter === state.answerLetters[index],
+                );
+                if (modeIsCorrect && lettersAreCorrect) {
+                    state.solved = true;
+                    state.score += 1;
+                    showResult(true, "Muito bem!", "Você reconheceu o modo e a sequência melódica completa.");
+                } else if (modeIsCorrect) {
+                    showResult(false, "Quase lá", "O modo está correto. Escute novamente e revise as melodias.");
+                } else if (lettersAreCorrect) {
+                    showResult(false, "Quase lá", "A sequência está correta. Revise apenas o modo.");
+                } else {
+                    showResult(
+                        false,
+                        "Tente mais uma vez",
+                        "Revise o modo e a sequência. Você pode ouvir o trecho novamente.",
+                    );
+                }
+                render();
+            });
+
+            (async () => {
+                try {
+                    const wasmBinary = await fetchWasm("./pd4web.wasm");
+                    const module = await Pd4WebModule({ wasmBinary });
+                    Pd4Web = new module.Pd4Web();
+                    Pd4Web.openPatch("index.pd", { canvasId: "Pd4WebCanvas", soundToggleId: "Pd4WebAudioSwitch" });
+                    Pd4Web.onListReceived("modo", (_receiver, list) => {
+                        state.answerMode = normalize(list[0]);
+                        render();
+                    });
+
+                    Pd4Web.onListReceived("letras", (_receiver, list) => {
+                        state.answerLetters = Array.from(list).slice(0, 4).map(normalize);
+                        render();
+                    });
+
+                    state.pdReady = true;
+
+                    ui.loader.classList.add("is-hidden");
+
+                    resetRound(true);
+                } catch (error) {
+                    ui.status.textContent = "Não foi possível iniciar o exercício. Recarregue a página.";
+                    ui.progress.remove();
+                    console.error(error);
+                }
+            })();
+            render();
+        </script>
+    </body>
+</html>
