@@ -2,7 +2,7 @@
 #X declare -path Libs; 
 #X declare -path Libs; 
 #X declare -lib xlab; 
-#N canvas 0 0 466 568 (subpatch) 1; 
+#N canvas 0 0 466 568 (subpatch) 0; 
 #X obj 209 533 dac~, f 14; 
 #N canvas 0 0 466 568 PIANO-MELODIA 0; 
 #X obj 30 628 outlet; 

@@ -89,14 +89,25 @@
                 transform: none;
             }
 
+            .score {
+                display: block;
+                width: auto;
+                max-width: 95%;
+                height: auto;
+                margin: 0 auto;
+            }
+
             @media (prefers-color-scheme: dark) {
                 .pd4web-sound-switch {
                     filter: invert(1);
                 }
                 .score {
-                    filter: invert(1);
+                    display: block;
+                    width: auto;
                     max-width: 95%;
-                    margin-left: 2.5%;
+                    height: auto;
+                    margin: 0 auto;
+                    filter: invert(1);
                 }
             }
         </style>
@@ -113,8 +124,9 @@
 
         <div style="text-align: center">
             <img src="score1.svg" class="score" />
-            <hr />
+            <hr style="width: 60%; margin:2%;margin-left: 20%; %" />
             <img src="duplamente.svg" class="score" />
+            <hr style="width: 60%; margin:2%;margin-left: 20%; %" />
         </div>
         <script>
             const getEId = (id) => document.getElementById(id);
